@@ -79,7 +79,7 @@ npm install
 
 Start the development server:
 
-npm run dev
+""" npm run dev """
 
 
 Open your browser and navigate to the link shown (usually http://localhost:5173).
