@@ -1,0 +1,50 @@
+version: '3.8'
+
+
+networks:
+  maple-net:
+    driver: bridge
+
+services:
+  # --- DATABASE ---
+  mongo:
+    image: mongo:latest
+    container_name: maple-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - maple-net  # Connects to our private network
+
+  # --- BACKEND ---
+  backend:
+    build: ./backend
+    container_name: maple-backend
+    ports:
+      - "5000:5000"
+    environment:
+      # It finds 'mongo' because they are on the same 'maple-net'
+      - MONGO_URI=mongodb://mongo:27017/maplenotes
+      - AWS_REGION=ap-south-1
+    depends_on:
+      - mongo
+    networks:
+      - maple-net
+
+  # --- FRONTEND ---
+  frontend:
+    build: ./frontend
+    container_name: maple-frontend
+    ports:
+      - "5173:80"
+    environment:
+      # This env var is used during the BUILD process (Stage 1)
+      - VITE_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - maple-net
+
+volumes:
+  mongo-data:
