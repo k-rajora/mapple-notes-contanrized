@@ -1,0 +1,81 @@
+# --- 1. Service Account (The Bridge to AWS IAM) ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backend-sa
+  namespace: default
+  annotations:
+    # This ARN comes from 'terraform output backend_role_arn'
+    # It gives the Backend Pod permission to read/write to DynamoDB
+    eks.amazonaws.com/role-arn: arn:aws:iam::<YOUR_AWS_ACCOUNT_ID>:role/maple-notes-backend-role
+
+---
+# --- 2. Backend Deployment (Flask API) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: default
+  labels:
+    app: backend
+spec:
+  replicas: 2 # Runs 2 copies for High Availability (One in each AZ)
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      serviceAccountName: backend-sa # Uses the IAM Role defined above
+      containers:
+        - name: backend
+          # Jenkins will replace 'latest' with the specific build tag (e.g., v42)
+          image: <YOUR_AWS_ACCOUNT_ID>.dkr.ecr.<YOUR_AWS_REGION>.amazonaws.com/maple-notes-backend:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: AWS_REGION
+              value: "<YOUR_AWS_REGION>" # e.g., ap-south-1
+            - name: DYNAMODB_TABLE
+              value: "MapleNotesDB"
+          resources:
+            requests:
+              cpu: "256m"
+              memory: "512Mi"
+            limits:
+              cpu: "512m"
+              memory: "1Gi"
+
+---
+# --- 3. Frontend Deployment (React UI) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: default
+  labels:
+    app: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: <YOUR_AWS_ACCOUNT_ID>.dkr.ecr.<YOUR_AWS_REGION>.amazonaws.com/maple-notes-frontend:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "256m"
+              memory: "512Mi"
+            limits:
+              cpu: "512m"
+              memory: "1Gi"
