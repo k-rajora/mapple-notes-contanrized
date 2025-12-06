@@ -46,7 +46,7 @@ pipeline {
                         ${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=maple-notes \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://localhost:9000
+                        -Dsonar.host.url=http://13.201.8.210:9000
                         """
                     }
                 }
