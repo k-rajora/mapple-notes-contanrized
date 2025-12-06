@@ -37,7 +37,7 @@ spec:
             - containerPort: 5000
           env:
             - name: AWS_REGION
-              value: "<YOUR_AWS_REGION>" # e.g., ap-south-1
+              value: "ap-south-1" # e.g., ap-south-1
             - name: DYNAMODB_TABLE
               value: "MapleNotesDB"
           resources:
