@@ -40,14 +40,13 @@ pipeline {
                     echo "Running Code Quality Analysis..."
                     def scannerHome = tool 'SonarScanner'
                     
+                    // The plugin automatically injects the token you saved in Jenkins System settings
                     withSonarQubeEnv('MySonarServer') {
                         sh """
                         ${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=maple-notes \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.login=admin \
-                        -Dsonar.password=admin
+                        -Dsonar.host.url=http://localhost:9000
                         """
                     }
                 }
